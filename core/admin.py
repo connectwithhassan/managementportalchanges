@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django import forms
+from django.http import HttpResponse
+import csv
 from .models import Student, Course, CourseEnrolment, Exam
 
 
@@ -72,6 +74,8 @@ class CourseEnrolmentAdmin(admin.ModelAdmin):
     list_filter = ('status', 'active_status', 'enrolment_date', 'deadline', 'completion_date', 'course', 'student')
     search_fields = ('serial_number', 'student__name', 'course__course_name')
     readonly_fields = ('serial_number', 'extra_time_display')
+    actions = ['export_to_csv']
+    autocomplete_fields = ['student', 'course']
     fieldsets = (
         ('Enrolment Information', {
             'fields': ('serial_number', 'student', 'course', 'status', 'active_status')
@@ -109,6 +113,41 @@ class CourseEnrolmentAdmin(admin.ModelAdmin):
         return "Not completed yet"
     extra_time_display.short_description = "Extra Time"
 
+    def export_to_csv(self, request, queryset):
+        """Export selected course enrolments to CSV"""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="course_enrolment_details.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Serial Number',
+            'Student Name',
+            'Course Name',
+            'Enrolment Date',
+            'Deadline',
+            'Completion Date',
+            'Status',
+            'Active Status',
+            'Extra Time'
+        ])
+
+        for enrolment in queryset:
+            extra_time_str = self.extra_time_display(enrolment)
+            writer.writerow([
+                enrolment.serial_number,
+                enrolment.student.name,
+                enrolment.course.course_name,
+                enrolment.enrolment_date,
+                enrolment.deadline,
+                enrolment.completion_date,
+                enrolment.status,
+                enrolment.active_status,
+                extra_time_str
+            ])
+
+        return response
+    export_to_csv.short_description = "Export selected course enrolments to CSV"
+
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
@@ -117,6 +156,7 @@ class ExamAdmin(admin.ModelAdmin):
     list_filter = ('exam_type', 'active_status', 'exam_date', 'course_enrolment__course', 'course_enrolment__student')
     search_fields = ('serial_number', 'course_enrolment__student__name', 'course_enrolment__course__course_name')
     readonly_fields = ('serial_number', 'result_in_percentage_display')
+    actions = ['export_to_csv']
     fieldsets = (
         ('Exam Information', {
             'fields': ('serial_number', 'course_enrolment', 'exam_type', 'exam_date', 'active_status')
@@ -141,6 +181,40 @@ class ExamAdmin(admin.ModelAdmin):
         """Display the percentage result in the admin"""
         return f"{obj.result_in_percentage:.2f}%"
     result_in_percentage_display.short_description = "Result (%)"
+
+    def export_to_csv(self, request, queryset):
+        """Export selected exams to CSV"""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="exam_details.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Serial Number',
+            'Student Name',
+            'Course Name',
+            'Exam Type',
+            'Exam Date',
+            'Total Marks',
+            'Obtained Marks',
+            'Percentage',
+            'Active Status'
+        ])
+
+        for exam in queryset:
+            writer.writerow([
+                exam.serial_number,
+                exam.course_enrolment.student.name,
+                exam.course_enrolment.course.course_name,
+                exam.exam_type,
+                exam.exam_date,
+                exam.total_marks,
+                exam.obtained_marks,
+                f"{exam.result_in_percentage:.2f}%",
+                exam.active_status
+            ])
+
+        return response
+    export_to_csv.short_description = "Export selected exams to CSV"
 
 
 # Customize admin site headers

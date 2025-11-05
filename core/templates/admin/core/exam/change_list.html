@@ -1,0 +1,29 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    <li>
+        <a href="#" id="export-all-btn" class="btn btn-primary">Export All to CSV</a>
+    </li>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('export-all-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                // Select all checkboxes
+                var checkboxes = document.querySelectorAll('input[name="_selected_action"]');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = true;
+                });
+                // Submit the form with the export action
+                var form = document.getElementById('changelist-form');
+                var actionSelect = document.querySelector('select[name="action"]');
+                actionSelect.value = 'export_to_csv';
+                form.submit();
+            });
+        });
+    </script>
+{% endblock %}

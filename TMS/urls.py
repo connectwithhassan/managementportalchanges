@@ -17,7 +17,16 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+
+def home(request):
+    if request.user.is_authenticated:
+        return redirect('admin:index')
+    else:
+        return redirect('admin:login')
 
 urlpatterns = [
+    path("", home, name="home"),
     path("admin/", admin.site.urls),
 ]
