@@ -8,10 +8,10 @@ STUDENT_STATUS_CHOICES = [
 
 # Define choices for the Course Enrolment Status field
 ENROLMENT_STATUS_CHOICES = [
-    ('Semester 1', 'Semester 1'),
-    ('Semester 2', 'Semester 2'),
-    ('Semester 3', 'Semester 3'),
-    ('Semester 4', 'Semester 4'),
+    ('Level 1', 'Level 1'),
+    ('Level 2', 'Level 2'),
+    ('Level 3', 'Level 3'),
+    ('Level 4', 'Level 4'),
     # Add more as needed
 ]
 
@@ -107,8 +107,8 @@ class CourseEnrolment(models.Model):
     # We will compute the difference in application logic or use a model property.
     # For simplicity in the model definition, we won't define a direct field for the
     # difference but rely on a property/method.
-    # Status: Represents the student's progress within the course (e.g., Semester 1, ...).
-    status = models.CharField(max_length=50, choices=ENROLMENT_STATUS_CHOICES)
+    # Level: Represents the student's progress within the course (e.g., Level 1, ...).
+    level = models.CharField(max_length=50, choices=ENROLMENT_STATUS_CHOICES)
     # Active Status: Indicates whether the enrolment is currently active or inactive.
     active_status = models.CharField(max_length=10, choices=ACTIVE_STATUS_CHOICES, default='Active')
 

@@ -70,15 +70,15 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(CourseEnrolment)
 class CourseEnrolmentAdmin(admin.ModelAdmin):
-    list_display = ('serial_number', 'student', 'course', 'enrolment_date', 'deadline', 'completion_date', 'status', 'active_status', 'extra_time_display')
-    list_filter = ('status', 'active_status', 'enrolment_date', 'deadline', 'completion_date', 'course', 'student')
+    list_display = ('serial_number', 'student', 'course', 'enrolment_date', 'deadline', 'completion_date', 'level', 'active_status', 'extra_time_display')
+    list_filter = ('level', 'active_status', 'enrolment_date', 'deadline', 'completion_date', 'course', 'student')
     search_fields = ('serial_number', 'student__name', 'course__course_name')
     readonly_fields = ('serial_number', 'extra_time_display')
     actions = ['export_to_csv']
     autocomplete_fields = ['student', 'course']
     fieldsets = (
         ('Enrolment Information', {
-            'fields': ('serial_number', 'student', 'course', 'status', 'active_status')
+            'fields': ('serial_number', 'student', 'course', 'level', 'active_status')
         }),
         ('Dates', {
             'fields': ('enrolment_date', 'deadline', 'completion_date')
@@ -140,7 +140,7 @@ class CourseEnrolmentAdmin(admin.ModelAdmin):
                 enrolment.enrolment_date,
                 enrolment.deadline,
                 enrolment.completion_date,
-                enrolment.status,
+                enrolment.level,
                 enrolment.active_status,
                 extra_time_str
             ])
