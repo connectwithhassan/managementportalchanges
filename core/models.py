@@ -1,4 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+import threading
+
+# Thread-local storage for current user
+local = threading.local()
 
 # Define choices for the Student Status field
 STUDENT_STATUS_CHOICES = [
@@ -178,3 +185,46 @@ class Exam(models.Model):
 
     def __str__(self):
         return f"{self.exam_type} for {self.course_enrolment.student.name} in {self.course_enrolment.course.course_name}"
+
+
+# 5. ActionLog Model
+class ActionLog(models.Model):
+    """
+    Logs actions performed by users on the models.
+    """
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action_type = models.CharField(max_length=10, choices=[('CREATE', 'Create'), ('UPDATE', 'Update'), ('DELETE', 'Delete')])
+    model_name = models.CharField(max_length=50)
+    object_id = models.CharField(max_length=50)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    details = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.user} {self.action_type} {self.model_name} {self.object_id} at {self.timestamp}"
+
+
+# Signals to log actions
+@receiver(post_save)
+def log_save(sender, instance, created, **kwargs):
+    if sender in [Student, Course, CourseEnrolment, Exam]:
+        action = 'CREATE' if created else 'UPDATE'
+        user = getattr(local, 'user', None)
+        ActionLog.objects.create(
+            user=user,
+            action_type=action,
+            model_name=sender.__name__,
+            object_id=str(instance.pk),
+            details=f"{action} {sender.__name__} {instance}"
+        )
+
+@receiver(post_delete)
+def log_delete(sender, instance, **kwargs):
+    if sender in [Student, Course, CourseEnrolment, Exam]:
+        user = getattr(local, 'user', None)
+        ActionLog.objects.create(
+            user=user,
+            action_type='DELETE',
+            model_name=sender.__name__,
+            object_id=str(instance.pk),
+            details=f"DELETE {sender.__name__} {instance}"
+        )

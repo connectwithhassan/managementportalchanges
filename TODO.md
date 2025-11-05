@@ -1,6 +1,9 @@
-# TODO: Change CourseEnrolment Status from Semesters to Levels and Rename Field to Level
+# TODO: Implement User Action Logging for Admin Display
 
-- [x] Update core/models.py: Change ENROLMENT_STATUS_CHOICES from semesters to levels
-- [x] Rename 'status' field to 'level' in core/models.py
-- [x] Update core/admin.py: Change references from 'status' to 'level'
-- [x] Create and run Django migration for the field rename
+- [x] Add ActionLog model to core/models.py
+- [x] Add signals for post_save and post_delete on Student, Course, CourseEnrolment, Exam in core/models.py
+- [x] Create middleware in core/middleware.py to track current user
+- [x] Register ActionLog in core/admin.py with custom admin
+- [x] Update TMS/settings.py to include the middleware
+- [x] Run makemigrations and migrate
+- [x] Test the logging by performing actions (fixed user display)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.http import HttpResponse
 import csv
-from .models import Student, Course, CourseEnrolment, Exam
+from .models import Student, Course, CourseEnrolment, Exam, ActionLog
 
 
 class ExamForm(forms.ModelForm):
@@ -215,6 +215,28 @@ class ExamAdmin(admin.ModelAdmin):
 
         return response
     export_to_csv.short_description = "Export selected exams to CSV"
+
+
+@admin.register(ActionLog)
+class ActionLogAdmin(admin.ModelAdmin):
+    list_display = ('user_display', 'action_type', 'model_name', 'object_id', 'timestamp', 'details')
+    list_filter = ('action_type', 'model_name', 'timestamp', 'user')
+    search_fields = ('user__username', 'model_name', 'object_id', 'details')
+    readonly_fields = ('user', 'action_type', 'model_name', 'object_id', 'timestamp', 'details')
+    ordering = ('-timestamp',)
+
+    def user_display(self, obj):
+        return obj.user.username if obj.user else "Anonymous"
+    user_display.short_description = "User"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 # Customize admin site headers
